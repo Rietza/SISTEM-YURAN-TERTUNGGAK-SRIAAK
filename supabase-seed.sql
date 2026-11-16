@@ -38,26 +38,28 @@ INSERT INTO "Tetapan" ("kunci", "nilai") VALUES
 
 -- ============================================================
 -- STEP 3: Insert Pengguna (users with hashed passwords)
--- Passwords (sha256):
---   pentadbir123: 5e884898da28047151d0e56f8dc6292773603d0d6aabbddc8e7...
--- For simplicity, use the same hash format as the app
+-- Passwords hashed using SHA-256 (same algorithm as Node.js app)
+-- Format: hex string, 64 chars lowercase
 -- ============================================================
--- Hash helper: sha256 in SQL (PostgreSQL has digest() in pgcrypto)
-CREATE EXTENSION IF NOT EXISTS pgcrypto;
+-- Hash values (sha256, hex):
+--   pentadbir123 → 9170e11c2fa491486bb79cdb64349549b3b8d05ffd6b2254a991e8b795108cad
+--   bendahari123 → 0bafbbee741b98f99c3196fef9665e36162513fa2a33be1e143d71f214d0886a
+--   pengetua123  → b59d2629241cc10523b7851b868654da2e30b6b3883a6688069cd745d9e7a724
+--   guru123      → ae81343369944399b70de862dbe75536faa8e44c50ad0a312e380303173f4756
 
 INSERT INTO "Pengguna" ("id", "nama", "emel", "peranan", "kataLaluanHash", "aktif") VALUES
-  ('pentadbir-001', 'Pentadbir Sistem', 'pentadbir@sriaakl.edu.my', 'PENTADBIR', encode(digest('pentadbir123', 'sha256'), 'hex'), true),
-  ('bendahari-001', 'Bendahari Yuran', 'bendahari@sriaakl.edu.my', 'BENDAHARI', encode(digest('bendahari123', 'sha256'), 'hex'), true),
-  ('pengetua-001', 'Pengetua SRIAAKL', 'pengetua@sriaakl.edu.my', 'PENGETUA', encode(digest('pengetua123', 'sha256'), 'hex'), true);
+  ('pentadbir-001', 'Pentadbir Sistem', 'pentadbir@sriaakl.edu.my', 'PENTADBIR', '9170e11c2fa491486bb79cdb64349549b3b8d05ffd6b2254a991e8b795108cad', true),
+  ('bendahari-001', 'Bendahari Yuran', 'bendahari@sriaakl.edu.my', 'BENDAHARI', '0bafbbee741b98f99c3196fef9665e36162513fa2a33be1e143d71f214d0886a', true),
+  ('pengetua-001', 'Pengetua SRIAAKL', 'pengetua@sriaakl.edu.my', 'PENGETUA', 'b59d2629241cc10523b7851b868654da2e30b6b3883a6688069cd745d9e7a724', true);
 
--- 12 Guru Kelas
+-- 12 Guru Kelas (semua guna password: guru123)
 INSERT INTO "Pengguna" ("id", "nama", "emel", "peranan", "kataLaluanHash", "aktif")
 SELECT
   'guru-' || lpad(g::text, 2, '0'),
   'Guru Kelas ' || g::text,
   'guru' || g::text || '@sriaakl.edu.my',
   'GURU_KELAS',
-  encode(digest('guru123', 'sha256'), 'hex'),
+  'ae81343369944399b70de862dbe75536faa8e44c50ad0a312e380303173f4756',
   true
 FROM generate_series(1, 12) AS g;
 

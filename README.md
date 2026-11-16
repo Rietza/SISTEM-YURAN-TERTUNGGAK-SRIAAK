@@ -38,12 +38,25 @@ Sistem kewangan berasaskan web untuk memantau tunggakan yuran murid — prototai
 
 ## Akaun Demo
 
-| Peranan | Emel | Kata Laluan |
-|---------|------|-------------|
-| Pentadbir | `pentadbir@sriaakl.edu.my` | `pentadbir123` |
-| Bendahari | `bendahari@sriaakl.edu.my` | `bendahari123` |
-| Pengetua | `pengetua@sriaakl.edu.my` | `pengetua123` |
-| Guru Kelas | `guru1@sriaakl.edu.my` | `guru123` |
+Sistem menggunakan SHA-256 untuk hash kata laluan. Berikut adalah akaun demo yang dijana oleh skrip seed:
+
+| Peranan | Emel | Kata Laluan | Akses |
+|---------|------|-------------|-------|
+| Pentadbir Sistem | `pentadbir@sriaakl.edu.my` | `pentadbir123` | Akses penuh (semua modul + tetapan) |
+| Bendahari | `bendahari@sriaakl.edu.my` | `bendahari123` | Rekod bayaran, peringatan, ansuran, nota |
+| Pengetua | `pengetua@sriaakl.edu.my` | `pengetua123` | Pantau keseluruhan, lulus pengecualian |
+| Guru Kelas 1-12 | `guru1@sriaakl.edu.my` hingga `guru12@sriaakl.edu.my` | `guru123` | Lihat kelas sendiri, tambah nota |
+
+### Hash SHA-256 (untuk pangkalan data)
+
+| Kata Laluan | Hash SHA-256 (hex, 64 aksara) |
+|-------------|-------------------------------|
+| `pentadbir123` | `9170e11c2fa491486bb79cdb64349549b3b8d05ffd6b2254a991e8b795108cad` |
+| `bendahari123` | `0bafbbee741b98f99c3196fef9665e36162513fa2a33be1e143d71f214d0886a` |
+| `pengetua123` | `b59d2629241cc10523b7851b868654da2e30b6b3883a6688069cd745d9e7a724` |
+| `guru123` | `ae81343369944399b70de862dbe75536faa8e44c50ad0a312e380303173f4756` |
+
+Hash ini dijana menggunakan `crypto.createHash('sha256').update(password).digest('hex')` di Node.js dan boleh disahkan dengan `encode(digest('password', 'sha256'), 'hex')` di PostgreSQL (pgcrypto).
 
 ## Timbunan Teknologi
 
