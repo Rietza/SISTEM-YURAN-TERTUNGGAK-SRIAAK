@@ -1,17 +1,26 @@
 // SRIAAKL - Sistem Pemantauan Tunggakan Yuran Murid
 // Sekolah Rendah Islam Al-Amin Keramat
 //
-// Versi SQLite (untuk pembangunan tempatan)
-// Untuk guna: cp prisma/schema.sqlite.prisma prisma/schema.prisma
-// Atau: bun run setup:sqlite
+// DEFAULT SCHEMA: PostgreSQL (Supabase)
+// Diperlukan untuk deployment Vercel/Netlify (filesystem read-only)
+//
+// Untuk pembangunan tempatan dengan SQLite:
+//   cp prisma/schema.sqlite.prisma prisma/schema.prisma
+//   bun run setup:sqlite
+//
+// Pastikan DATABASE_URL dalam .env mengandungi connection string PostgreSQL:
+//   DATABASE_URL="postgresql://postgres:[PASSWORD]@db.PROJECT_REF.supabase.co:5432/postgres"
+//   ATAU (pooler):
+//   DATABASE_URL="postgresql://postgres.PROJECT_REF:[PASSWORD]@aws-0-REGION.pooler.supabase.com:5432/postgres"
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
+  directUrl = env("DATABASE_URL")
 }
 
 // ===== Pengguna & Peranan (RBAC) =====
