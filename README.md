@@ -95,12 +95,32 @@ src/
 
 ## Pemasangan & Menjalankan
 
+### Kaedah Pantas (Disyorkan)
+
+```bash
+git clone https://github.com/Rietza/SISTEM-YURAN-TERTUNGGAK-SRIAAK.git
+cd SISTEM-YURAN-TERTUNGGAK-SRIAAK
+
+# SQLite (default - paling mudah, tiada konfigurasi)
+bash setup.sh sqlite
+
+# ATAU Supabase PostgreSQL
+bash setup.sh supabase
+
+# Mulakan dev server
+bun run dev
+```
+
+Buka `http://localhost:3000` dan log masuk dengan akaun demo di atas.
+
+### Kaedah Manual - SQLite (Pembangunan Tempatan)
+
 ```bash
 # 1. Pasang dependencies
 bun install
 
-# 2. Cipta fail .env dengan:
-echo 'DATABASE_URL="file:/home/z/my-project/db/custom.db"' > .env
+# 2. Cipta fail .env
+echo 'DATABASE_URL="file:./db/custom.db"' > .env
 
 # 3. Push skema Prisma ke SQLite
 bun run db:push
@@ -112,7 +132,43 @@ bun run prisma/seed.ts
 bun run dev
 ```
 
-Buka `http://localhost:3000` dan log masuk dengan akaun demo di atas.
+### Kaedah Manual - Supabase PostgreSQL
+
+```bash
+# 1. Pasang dependencies
+bun install
+
+# 2. Dapatkan connection string dari Supabase Dashboard:
+#    Settings → Database → Connection string
+#    Format: postgresql://postgres.[REF]:[PASS]@aws-0-[REGION].pooler.supabase.com:5432/postgres
+
+# 3. Cipta fail .env dengan connection string Supabase
+echo 'DATABASE_URL="postgresql://postgres.bcovngbahyygvlcgctoc:PASSWORD@aws-0-REGION.pooler.supabase.com:5432/postgres"' > .env
+
+# 4. Tukar schema Prisma ke PostgreSQL
+cp prisma/schema.supabase.prisma prisma/schema.prisma
+
+# 5. Push skema ke Supabase
+bun run db:push
+
+# 6. Jana data dummy
+bun run prisma/seed.ts
+
+# 7. Jalankan dev server
+bun run dev
+```
+
+### Alternatif: Supabase SQL Editor (tanpa Prisma)
+
+Jika anda tidak boleh jalankan Prisma (firewall blok port 5432, dll):
+
+1. Pergi ke **Supabase Dashboard → SQL Editor**
+2. Copy & paste kandungan `supabase-schema.sql` → Run (cipta 13 jadual)
+3. Copy & paste kandungan `supabase-seed.sql` → Run (jana data dummy)
+4. Pastikan `.env` mengandungi connection string Supabase
+5. Tukar schema ke PostgreSQL: `cp prisma/schema.supabase.prisma prisma/schema.prisma`
+6. `bun run db:generate` (jana Prisma client untuk PostgreSQL)
+7. `bun run dev`
 
 ## Logik Pengiraan Tunggakan
 

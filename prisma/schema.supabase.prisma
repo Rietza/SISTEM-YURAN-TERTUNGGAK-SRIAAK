@@ -1,0 +1,210 @@
+// SRIAAKL - Sistem Pemantauan Tunggakan Yuran Murid
+// Sekolah Rendah Islam Al-Amin Keramat
+//
+// Versi Supabase PostgreSQL
+// Untuk guna: salin fail ini ke atas prisma/schema.prisma ATAU guna:
+//   prisma db push --schema=prisma/schema.supabase.prisma
+//
+// Pastikan DATABASE_URL dalam .env mengandungi connection string Supabase:
+//   DATABASE_URL="postgresql://postgres:[PASSWORD]@aws-0-[REGION].pooler.supabase.com:5432/postgres"
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DATABASE_URL")
+}
+
+// ===== Pengguna & Peranan (RBAC) =====
+model Pengguna {
+  id              String   @id @default(cuid())
+  nama            String
+  emel            String   @unique
+  peranan         String   // PENTADBIR | BENDAHARI | GURU_KELAS | PENGETUA
+  kataLaluanHash  String
+  aktif           Boolean  @default(true)
+  tarikhCipta     DateTime @default(now())
+  tarikhKemaskini DateTime @updatedAt
+
+  kelasGuru       Kelas[]  @relation("GuruKelas")
+  bayaranDirekod  Bayaran[]
+  peringatanHantar Peringatan[]
+  notaCipta       NotaSusulan[]
+  logAudit        LogAudit[]
+  pelanLulus      PelanAnsuran[]
+  pengecualianLulus Pengecualian[]
+}
+
+// ===== Struktur Sekolah =====
+model Kelas {
+  id            String   @id @default(cuid())
+  namaKelas     String   // cth: "4 Amanah"
+  tahunDarjah   Int      // 1-6
+  guruKelasId   String?
+  guruKelas     Pengguna? @relation("GuruKelas", fields: [guruKelasId], references: [id])
+  murid         Murid[]
+  tarikhCipta   DateTime @default(now())
+}
+
+model Murid {
+  id              String   @id @default(cuid())
+  noMurid         String   @unique
+  nama            String
+  kelasId         String
+  kelas           Kelas    @relation(fields: [kelasId], references: [id])
+  namaPenjaga     String
+  noTelefonPenjaga String
+  noKpPenjaga     String?
+  status          String   @default("AKTIF") // AKTIF | TIDAK_AKTIF
+  tarikhDaftar    DateTime @default(now())
+
+  invois          Invois[]
+  bayaran         Bayaran[]
+  peringatan      Peringatan[]
+  notaSusulan     NotaSusulan[]
+  pelanAnsuran    PelanAnsuran[]
+  pengecualian    Pengecualian[]
+}
+
+// ===== Yuran & Invois =====
+model StrukturYuran {
+  id              String   @id @default(cuid())
+  tahun           Int
+  tahunDarjah     Int
+  jenisYuran      String   @default("YURAN_BULANAN")
+  jumlahBulanan   Float
+  hariAkhirBayar  Int      @default(10) // hari dalam bulan
+  tarikhCipta     DateTime @default(now())
+}
+
+model Invois {
+  id            String   @id @default(cuid())
+  muridId       String
+  murid         Murid    @relation(fields: [muridId], references: [id])
+  tahun         Int
+  bulan         Int      // 1-12
+  jumlah        Float
+  diskaun       Float    @default(0)
+  tarikhAkhir   DateTime
+  tarikhCipta   DateTime @default(now())
+
+  peruntukan    PeruntukanBayaran[]
+
+  @@unique([muridId, tahun, bulan])
+}
+
+// ===== Bayaran & Peruntukan FIFO =====
+model Bayaran {
+  id            String   @id @default(cuid())
+  muridId       String
+  murid         Murid    @relation(fields: [muridId], references: [id])
+  tarikhBayar   DateTime
+  jumlah        Float
+  kaedah        String   // TUNAI | FPX | DUITNOW | CEK
+  noRujukan     String?
+  direkodOlehId String?
+  direkodOleh   Pengguna? @relation(fields: [direkodOlehId], references: [id])
+  tarikhCipta   DateTime @default(now())
+
+  peruntukan    PeruntukanBayaran[]
+}
+
+model PeruntukanBayaran {
+  id              String   @id @default(cuid())
+  bayaranId       String
+  bayaran         Bayaran  @relation(fields: [bayaranId], references: [id], onDelete: Cascade)
+  invoisId        String
+  invois          Invois   @relation(fields: [invoisId], references: [id])
+  jumlahDiperuntukkan Float
+  tarikhCipta     DateTime @default(now())
+}
+
+// ===== Pelan Ansuran =====
+model PelanAnsuran {
+  id              String   @id @default(cuid())
+  muridId         String
+  murid           Murid    @relation(fields: [muridId], references: [id])
+  jumlahKeseluruhan Float
+  bilAnsuran      Int
+  status          String   @default("AKTIF") // AKTIF | SELESAI | MUNGKIR | DIBATALKAN
+  sebab           String?
+  diluluskanOlehId String?
+  diluluskanOleh  Pengguna? @relation(fields: [diluluskanOlehId], references: [id])
+  tarikhCipta     DateTime @default(now())
+
+  ansuran         Ansuran[]
+}
+
+model Ansuran {
+  id            String   @id @default(cuid())
+  pelanId       String
+  pelan         PelanAnsuran @relation(fields: [pelanId], references: [id], onDelete: Cascade)
+  bil           Int
+  tarikhAkhir   DateTime
+  jumlah        Float
+  status        String   @default("BELUM") // BELUM | DIBAYAR | MUNGKIR
+  tarikhBayar   DateTime?
+}
+
+// ===== Pengecualian / Bantuan =====
+model Pengecualian {
+  id              String   @id @default(cuid())
+  muridId         String
+  murid           Murid    @relation(fields: [muridId], references: [id])
+  jenis           String   // DISKAUN_ADIK_BERADIK | BANTUAN | PENGECUALIAN
+  jumlah          Float
+  sebab           String
+  diluluskanOlehId String?
+  diluluskanOleh  Pengguna? @relation(fields: [diluluskanOlehId], references: [id])
+  tarikhCipta     DateTime @default(now())
+}
+
+// ===== Peringatan =====
+model Peringatan {
+  id              String   @id @default(cuid())
+  muridId         String
+  murid           Murid    @relation(fields: [muridId], references: [id])
+  saluran         String   // WHATSAPP | SMS | EMEL
+  peringkat       String   // MESRA | TEGAS | NOTIS_AKHIR
+  mesej           String
+  tarikhHantar    DateTime @default(now())
+  status          String   @default("DIHANTAR") // SIMULASI
+  dihantarOlehId  String?
+  dihantarOleh    Pengguna? @relation(fields: [dihantarOlehId], references: [id])
+}
+
+// ===== Nota Tindakan Susulan =====
+model NotaSusulan {
+  id              String   @id @default(cuid())
+  muridId         String
+  murid           Murid    @relation(fields: [muridId], references: [id])
+  jenis           String   // PANGGILAN | TEMU_JANJI | JANJI_BAYAR | LAWATAN | LAIN
+  catatan         String
+  janjiBayarTarikh DateTime?
+  diciptaOlehId   String?
+  diciptaOleh     Pengguna? @relation(fields: [diciptaOlehId], references: [id])
+  tarikhCipta     DateTime @default(now())
+}
+
+// ===== Log Audit =====
+model LogAudit {
+  id            String   @id @default(cuid())
+  penggunaId    String?
+  pengguna      Pengguna? @relation(fields: [penggunaId], references: [id])
+  tindakan      String
+  entiti         String
+  masa          DateTime @default(now())
+  butiran       String?
+}
+
+// ===== Tetapan Sistem =====
+model Tetapan {
+  id            String   @id @default(cuid())
+  kunci         String   @unique
+  nilai         String
+  tarikhCipta   DateTime @default(now())
+  tarikhKemaskini DateTime @updatedAt
+}

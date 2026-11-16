@@ -1,5 +1,8 @@
 // SRIAAKL - Sistem Pemantauan Tunggakan Yuran Murid
 // Sekolah Rendah Islam Al-Amin Keramat
+//
+// Default: SQLite (untuk pembangunan tempatan - "clone & jalankan" tanpa konfigurasi)
+// Untuk Supabase PostgreSQL: lihat prisma/schema.supabase.prisma
 
 generator client {
   provider = "prisma-client-js"
