@@ -1,46 +1,39 @@
 import { PrismaClient } from '@prisma/client'
 
-// Friendly error if DATABASE_URL is missing
+// Validate DATABASE_URL is set
 if (!process.env.DATABASE_URL) {
   console.error(`
 ╔══════════════════════════════════════════════════════════════════╗
-║  RALAT: DATABASE_URL tidak dijumpai dalam .env                    ║
+║  RALAT: DATABASE_URL tidak dijumpai dalam environment            ║
 ╠══════════════════════════════════════════════════════════════════╣
-║  Cara betulkan:                                                   ║
 ║                                                                   ║
-║  1. Salin .env.example ke .env:                                   ║
-║     cp .env.example .env                                          ║
+║  Di Vercel: Project Settings → Environment Variables → Add        ║
+║    Key: DATABASE_URL                                              ║
+║    Value: postgresql://postgres:PASSWORD@HOST:5432/postgres       ║
 ║                                                                   ║
-║  2. Untuk SQLite (tempatan - paling mudah):                       ║
-║     DATABASE_URL="file:./db/custom.db"                            ║
+║  Di tempatan: salin .env.example ke .env                          ║
+║    cp .env.example .env                                           ║
 ║                                                                   ║
-║  3. Untuk Supabase PostgreSQL:                                    ║
-║     DATABASE_URL="postgresql://postgres:PASSWORD@HOST:5432/postgres"
+║  SQLite (untuk dev tempatan sahaja, TIDAK untuk Vercel):          ║
+║    DATABASE_URL="file:./db/custom.db"                             ║
+║    cp prisma/schema.sqlite.prisma prisma/schema.prisma            ║
 ║                                                                   ║
-║  4. Push schema ke database:                                      ║
-║     bun run db:push                                               ║
+║  Supabase PostgreSQL (untuk Vercel/production):                   ║
+║    DATABASE_URL="postgresql://postgres.XXX:PASS@HOST:5432/postgres"
 ║                                                                   ║
-║  5. Jana data dummy:                                              ║
-║     bun run prisma/seed.ts                                        ║
-║                                                                   ║
-║  6. Mulakan semula dev server:                                    ║
-║     bun run dev                                                   ║
 ╚══════════════════════════════════════════════════════════════════╝
 `)
 }
-
-// Fallback to local SQLite if DATABASE_URL not set (clone & jalankan)
-const databaseUrl = process.env.DATABASE_URL || 'file:./db/custom.db'
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined
 }
 
+// Prisma client singleton - reuse across hot reloads
 export const db =
   globalForPrisma.prisma ??
   new PrismaClient({
     log: ['error', 'warn'],
-    datasourceUrl: databaseUrl,
   })
 
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = db
