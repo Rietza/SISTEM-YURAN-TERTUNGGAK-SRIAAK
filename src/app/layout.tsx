@@ -12,6 +12,10 @@ const geistSans = Geist({
 export const metadata: Metadata = {
   title: "SRIAAKL - Sistem Tunggakan Yuran",
   description: "Sistem Pemantauan Tunggakan Yuran Murid - Sekolah Rendah Islam Al-Amin Keramat",
+  icons: {
+    icon: "/logo-sriaakl.png",
+    apple: "/logo-sriaakl.png",
+  },
 };
 
 export default function RootLayout({

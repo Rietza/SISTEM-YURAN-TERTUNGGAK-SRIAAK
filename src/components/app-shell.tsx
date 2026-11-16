@@ -20,7 +20,7 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import {
   LayoutDashboard, Table2, User, Banknote, Bell, CreditCard,
   ClipboardList, FileCheck2, FileBarChart, Settings, ScrollText,
-  LogOut, Menu, X, Wallet, ShieldAlert
+  LogOut, Menu, X, ShieldAlert
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -111,8 +111,14 @@ export function AppShell() {
         {/* Brand */}
         <div className="p-5 border-b border-sidebar-border">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-primary/15 border border-primary/30 flex items-center justify-center flex-shrink-0">
-              <Wallet className="w-5 h-5 text-primary" />
+            <div className="w-11 h-11 rounded-xl bg-background border border-primary/30 shadow-md flex items-center justify-center flex-shrink-0 overflow-hidden">
+              <img
+                src="/logo-sriaakl.png"
+                alt="Logo SRIAAKL"
+                className="w-full h-full object-contain"
+                width={44}
+                height={44}
+              />
             </div>
             <div className="min-w-0">
               <h2 className="text-sm font-bold text-sidebar-foreground truncate">SRIAAKL</h2>

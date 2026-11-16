@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Wallet, LogIn, Eye, EyeOff, ShieldCheck } from 'lucide-react'
+import { LogIn, Eye, EyeOff, ShieldCheck } from 'lucide-react'
 
 const DEMO_AKAUN = [
   { peranan: 'Pentadbir', emel: 'pentadbir@sriaakl.edu.my', katalaluan: 'pentadbir123' },
@@ -49,8 +49,15 @@ export function LoginScreen() {
       <div className="w-full max-w-md relative z-10">
         {/* Header */}
         <div className="text-center mb-6">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/15 border border-primary/30 mb-3">
-            <Wallet className="w-8 h-8 text-primary" />
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-background border border-primary/30 shadow-lg mb-3 overflow-hidden">
+            {/* Use Next.js Image component for optimization, fallback to img */}
+            <img
+              src="/logo-sriaakl.png"
+              alt="Logo Sekolah Rendah Islam Al-Amin Keramat"
+              className="w-full h-full object-contain"
+              width={80}
+              height={80}
+            />
           </div>
           <h1 className="text-2xl font-bold text-foreground">SRIAAKL Tunggakan</h1>
           <p className="text-sm text-muted-foreground mt-1">
